@@ -1,0 +1,11 @@
+.vscode
+models/*
+__pycache__
+archive
+data/*
+eda_raw
+app
+.claude
+
+!download_link.txt
+!models/plots
