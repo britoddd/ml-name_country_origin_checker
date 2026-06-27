@@ -1,0 +1,11 @@
+{
+  "num_classes": 104,
+  "n_train": 3624986,
+  "n_val": 776782,
+  "n_test": 776784,
+  "max_per_country": 50000,
+  "post_split_train_imbalance_ratio": 1.8,
+  "n_augmented": 0,
+  "n_multi_country_names": 174564,
+  "dropped_countries": []
+}

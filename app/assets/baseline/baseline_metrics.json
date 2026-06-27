@@ -1,0 +1,41 @@
+{
+  "linsvm": {
+    "val": {
+      "macro_f1": 0.4943921750477959,
+      "accuracy": 0.51158,
+      "weighted_f1": 0.49255876148935357
+    },
+    "test": {
+      "macro_f1": 0.49307409444044514,
+      "accuracy": 0.51119,
+      "weighted_f1": 0.4920486483771716
+    },
+    "train_seconds": 485.6
+  },
+  "logreg": {
+    "val": {
+      "macro_f1": 0.501082534129309,
+      "accuracy": 0.50986,
+      "weighted_f1": 0.4992248323475276
+    },
+    "test": {
+      "macro_f1": 0.5002329565469815,
+      "accuracy": 0.50991,
+      "weighted_f1": 0.4991643337320992
+    },
+    "train_seconds": 169.1
+  },
+  "sgd": {
+    "val": {
+      "macro_f1": 0.4777520993500406,
+      "accuracy": 0.49913,
+      "weighted_f1": 0.47599537300978323
+    },
+    "test": {
+      "macro_f1": 0.47807613413337996,
+      "accuracy": 0.5005,
+      "weighted_f1": 0.4770836056580332
+    },
+    "train_seconds": 9.5
+  }
+}
