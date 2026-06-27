@@ -23,6 +23,7 @@ logged or stored.
 
 from __future__ import annotations
 
+import html
 import json
 import os
 import pickle
@@ -190,6 +191,11 @@ def predict_batch(file, backend: str, top_k: int):
 # ====================================================================================
 # "Run this step" simulation — stream a console log, then reveal the artifacts
 # ====================================================================================
+def _term(text: str) -> str:
+    """Wrap accumulated log text in a styled terminal block."""
+    return f'<pre class="term">{html.escape(text)}</pre>'
+
+
 def make_runner(log_lines):
     """Return a generator that streams `log_lines` to a console box, then reveals
     the (pre-generated) artifacts group. Outputs: [console, artifacts_group]."""
@@ -202,16 +208,15 @@ def make_runner(log_lines):
             delay = 0.05 if line.startswith("$") or not line.strip() else 0.28
             time.sleep(delay)
             # reveal the console (hidden until first click) and stream into it
-            yield gr.update(value=acc, visible=True), gr.update()
+            yield gr.update(value=_term(acc), visible=True), gr.update()
         acc += "\n✓ step complete — showing pre-generated artifacts below.\n"
-        yield gr.update(value=acc, visible=True), gr.update(visible=True)
+        yield gr.update(value=_term(acc), visible=True), gr.update(visible=True)
     return run
 
 
 def step_console():
     # hidden until the Run button is clicked (the runner reveals it)
-    return gr.Code(label="console", value="", interactive=False, lines=10, visible=False,
-                   elem_classes="console")
+    return gr.HTML(value="", visible=False, elem_classes="console")
 
 
 # ---- per-step simulated logs (numbers are the real pipeline outputs) ---------------
@@ -372,29 +377,38 @@ footer {display: none !important;}
             border-radius: 0 !important; margin-top: 14px; padding-top: 14px;}
 
 /* stat cards (EDA / Preprocess key numbers) */
-.stat-cards {display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 14px;}
-.stat-cards .stat {flex: 1 1 110px; text-align: center; padding: 14px 12px;
+.stat-cards {display: flex; flex-wrap: wrap; gap: 12px; margin: 6px 0 16px; padding: 2px;}
+.stat-cards .stat {flex: 1 1 110px; text-align: center; padding: 20px 16px;
     background: var(--block-background-fill);
     border: 1px solid var(--border-color-primary); border-radius: 12px;}
 .stat-cards .stat .v {font-size: 1.35rem; font-weight: 700; line-height: 1.1;
     color: var(--body-text-color);}
-.stat-cards .stat .k {margin-top: 5px; font-size: 0.7rem; font-weight: 600;
+.stat-cards .stat .k {margin-top: 6px; font-size: 0.7rem; font-weight: 600;
     letter-spacing: 0.04em; text-transform: uppercase;
     color: var(--body-text-color-subdued);}
-.muted {color: var(--body-text-color-subdued); font-style: italic;}
+.muted {color: var(--body-text-color-subdued); font-style: italic; padding: 8px 2px;}
 
 /* metrics tables rendered from markdown */
-.tbl table {width: 100%; border-collapse: collapse; font-size: 0.9rem;
+.tbl {padding: 2px;}
+.tbl table {width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9rem;
     border: 1px solid var(--border-color-primary); border-radius: 12px; overflow: hidden;}
 .tbl thead th {background: var(--table-even-background-fill, var(--neutral-100));
-    text-align: left; padding: 9px 13px; font-weight: 600; border: none;}
-.tbl tbody td {padding: 9px 13px; border: none;
+    text-align: left; padding: 12px 16px; font-weight: 600; border: none;}
+.tbl tbody td {padding: 12px 16px; border: none;
     border-top: 1px solid var(--border-color-primary);}
 .tbl tbody tr:hover {background: var(--table-row-focus, rgba(128,128,128,0.06));}
 
-/* simulated console: a real terminal look */
-.console {border-radius: 12px !important; overflow: hidden;}
-.console .cm-editor, .console textarea {font-size: 0.82rem !important; line-height: 1.5 !important;}
+/* simulated console: a self-contained, padded terminal block */
+.console {border: none !important; background: transparent !important; padding: 0 !important;}
+.term {margin: 0; background: #0f172a; color: #e2e8f0;
+    border: 1px solid var(--border-color-primary); border-radius: 12px;
+    padding: 16px 20px; font-size: 0.82rem; line-height: 1.65;
+    font-family: ui-monospace, "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    white-space: pre-wrap; word-break: break-word; overflow-x: auto;}
+
+/* give all result blocks inside the revealed artifacts breathing room */
+.artifacts {padding: 14px 16px 4px !important;}
+.artifacts > * {margin-bottom: 4px;}
 """
 
 OVERVIEW = """
@@ -403,8 +417,8 @@ OVERVIEW = """
 This Space walks through the whole project, **one page per stage** — the same stages that
 live in `pipeline/`:
 
-| # | Page | Script | What it does |
-|---|------|--------|--------------|
+| # |  Page  | Script | What it does |
+|---|--------|--------|--------------|
 | 1 | **EDA** | `eda01.py` | Profile 33M raw rows + the generated splits; quantify class balance and name ambiguity |
 | 2 | **Preprocess** | `preprocess02.py` | Synthesize full names, split 70/15/15, featurize to index arrays |
 | 3 | **Baselines** | `baseline03.py` | Train 3 sklearn TF-IDF models as a CPU floor |
