@@ -1,18 +1,11 @@
 """
-05_predict.py — Inference API / CLI for the name-to-nationality classifier.
-
-Loads the torch deep model (.pt, rebuilt from its stored Config + num_classes) or an
-sklearn baseline (.pkl + vectorizer.pkl), and returns top-k (country, probability).
+Loads the sklearn models (.pkl + vectorizer.pkl), and returns top-k (country, probability).
 Preprocessing is imported from common.py, so it is identical to training by construction.
 
 CLI:
   python 05_predict.py --name "Joko Widodo" --top_k 5
   python 05_predict.py --name "Mohammed Al Fayed" --model models/deep/deep_model.pt
   python 05_predict.py --name "Tanaka" --backend sklearn --model models/baseline_linsvm.pkl
-
-ETHICS: nationality predicted from a name is a STATISTICAL GUESS, not a fact. Do not use
-for profiling, hiring, credit, immigration, or law-enforcement decisions. Raw submitted
-names are never logged.
 """
 
 from __future__ import annotations

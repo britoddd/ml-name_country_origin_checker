@@ -1,16 +1,3 @@
-"""
-03_evaluation.py — Full evaluation of the sklearn baselines on the test set
-
-For each of {logreg, linsvm, sgd}: STRICT macro F1 (primary), accuracy, weighted F1,
-top-3/5, MRR, NLL, per-country F1, plus AMBIGUITY-AWARE set-lenient top-1/3 via
-name_country_map.json. Probabilities come from predict_proba where available, else a
-softmax over decision_function (same convention as 05_predict / the Space).
-
-Writes models/baseline_eval_metrics.json and plots to models/plots/baselines/.
-"""
-
-from __future__ import annotations
-
 import argparse
 import json
 import os

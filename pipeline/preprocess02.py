@@ -1,33 +1,3 @@
-"""
-01_preprocess.py — Build a name->nationality dataset from the aggregated names-dataset.
-
-DATA FORMAT (this dataset, NOT the per-row format the original template assumed):
-  archive/forenames.csv : forename,gender,country,count   (~12.5M rows)
-  archive/surnames.csv  : surname,gender,country,count     (~21M  rows)
-  archive/country_codes.csv : country_code,country_name    (105 countries)
-
-The tables are *aggregated frequency counts* of individual name tokens per country —
-there are no pre-joined "first last" rows. We therefore SYNTHESIZE realistic full names
-per country by sampling a forename and a surname weighted by their real counts
-(forename _|_ surname | country independence assumption). This reproduces the real
-marginal popularity of each token and matches the inference contract (full names like
-"Joko Widodo").
-
-Pipeline:
-  1. Chunked-read both tables, normalize tokens, accumulate per-country {token: count},
-     prune to the top --max_tokens per country to bound RAM.
-  2. Generate up to --max_per_country synthetic unique full names per country.
-  3. Stratified 70/15/15 split per country.
-  4. Build name_country_map.json from PRE-AUGMENTATION names (multi-country only).
-  5. Augment the TRAIN split only (small countries, <=3x), excluding val/test pairs.
-  6. Featurize to int16 index arrays (max_len=30) and save everything.
-
-Outputs (data/): {train,val,test}.csv, {train,val,test}_X.npy, {train,val,test}_y.npy,
-                 label_map.json, name_country_map.json, preprocess_stats.json
-"""
-
-from __future__ import annotations
-
 import argparse
 import json
 import os

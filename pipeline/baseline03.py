@@ -1,13 +1,3 @@
-"""
-02_baselines.py — sklearn baselines (CPU) to set a floor for the deep model to beat.
-
-Char n-gram TF-IDF -> {LinearSVC, LogisticRegression(saga), SGDClassifier(modified_huber)}.
-All pickled with PLAIN sklearn so they load anywhere (no cuML dependency).
-Reads data/{train,val,test}.csv produced by 01_preprocess.py.
-"""
-
-from __future__ import annotations
-
 import argparse
 import json
 import os

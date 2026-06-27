@@ -1,20 +1,3 @@
-"""
-06_eda.py — Exploratory Data Analysis for the name-to-nationality dataset.
-
-Two layers of analysis:
-  (A) RAW aggregated tables (archive/forenames.csv, surnames.csv) — chunked so we never
-      load 33M rows into RAM. Per-country distinct-token counts, total frequency mass, and
-      the distribution of the `count` column.
-  (B) GENERATED splits (data/{train,val,test}.csv/_y.npy + label_map + name_country_map) —
-      class balance, name-length / token-count / character distributions, and the
-      multi-country (ambiguity) structure that 04_evaluate uses.
-
-Outputs PNG plots + eda_summary.json + eda_report.md into --out_dir (default: eda/).
-Reuses common.normalize_name only where needed; split names are already normalized by 01.
-"""
-
-from __future__ import annotations
-
 import argparse
 import json
 import os
