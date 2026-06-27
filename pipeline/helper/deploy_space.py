@@ -1,7 +1,7 @@
 """One-shot deploy of app/ to a public HF Gradio Space. Uses the cached HF token."""
 from huggingface_hub import HfApi
 
-REPO_ID = "britod/name-nationality-classifier"
+REPO_ID = "britod/name-origins-checker"
 
 
 def deploy():
@@ -14,11 +14,11 @@ def deploy():
         folder_path="app",
         repo_id=REPO_ID,
         repo_type="space",
-        commit_message="Deploy name-nationality classifier (deep + baselines, single + batch)",
+        commit_message="Deploy name-origins classifier (sklearn baselines, pipeline walkthrough)",
         ignore_patterns=["__pycache__/*", "*.pyc", "_smoke*", "*_test.log", ".gitignore"],
-        # remove any stale remote artifacts no longer present locally (e.g. the old
-        # top-level deep_model.pt now relocated to models/deep/)
-        delete_patterns=["models/deep_model.pt"],
+        # remove any stale remote artifacts no longer present locally — the deep model
+        # (top-level deep_model.pt and the later models/deep/ dir) has been retired.
+        delete_patterns=["models/deep_model.pt", "models/deep/*"],
     )
     print(f"\nDONE -> https://huggingface.co/spaces/{REPO_ID}")
 

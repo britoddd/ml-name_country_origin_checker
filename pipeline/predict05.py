@@ -4,8 +4,7 @@ Preprocessing is imported from common.py, so it is identical to training by cons
 
 CLI:
   python 05_predict.py --name "Joko Widodo" --top_k 5
-  python 05_predict.py --name "Mohammed Al Fayed" --model models/deep/deep_model.pt
-  python 05_predict.py --name "Tanaka" --backend sklearn --model models/baseline_linsvm.pkl
+  python 05_predict.py --name "Tanaka" --model baseline_linsvm.pkl
 """
 
 from __future__ import annotations
@@ -17,7 +16,7 @@ import pickle
 
 import numpy as np
 
-from pipeline.helper import force_utf8_stdout, normalize_name, name_to_indices, Config, build_model
+from pipeline.helper import force_utf8_stdout, normalize_name, name_to_indices
 
 force_utf8_stdout()
 
@@ -28,30 +27,6 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DISCLAIMER = ("⚠️  Statistical guess from name patterns only — NOT a statement of a "
               "person's actual nationality. Do not use for profiling or any "
               "high-stakes decision.")
-
-
-class TorchPredictor:
-    def __init__(self, model_path: str):
-        import torch
-        self.torch = torch
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        ckpt = torch.load(model_path, map_location=self.device, weights_only=False)
-        self.cfg = Config.from_dict(ckpt["config"])
-        self.label_map = {int(k): v for k, v in ckpt["label_map"].items()}
-        self.model = build_model(self.cfg).to(self.device)
-        self.model.load_state_dict(ckpt["state_dict"])
-        self.model.eval()
-
-    def predict(self, name: str, top_k: int = 5):
-        torch = self.torch
-        x = name_to_indices(name)[None, :].astype(np.int64)
-        xb = torch.from_numpy(x).to(self.device)
-        with torch.no_grad():
-            with torch.amp.autocast("cuda", enabled=self.device.type == "cuda"):
-                logits = self.model(xb)
-            probs = torch.softmax(logits, dim=1)[0].float().cpu().numpy()
-        idx = np.argsort(-probs)[:top_k]
-        return [(self.label_map[int(i)], float(probs[i])) for i in idx]
 
 
 class SklearnPredictor:
