@@ -4,8 +4,9 @@ __pycache__
 archive
 data/*
 eda_raw
-app
+app/models
 .claude
 
 !download_link.txt
 !models/plots
+!archive/LICENSE.txt

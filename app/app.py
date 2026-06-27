@@ -210,7 +210,8 @@ def make_runner(log_lines):
 
 def step_console():
     # hidden until the Run button is clicked (the runner reveals it)
-    return gr.Code(label="console", value="", interactive=False, lines=10, visible=False)
+    return gr.Code(label="console", value="", interactive=False, lines=10, visible=False,
+                   elem_classes="console")
 
 
 # ---- per-step simulated logs (numbers are the real pipeline outputs) ---------------
@@ -260,20 +261,25 @@ EVAL_LOG = [
 # ====================================================================================
 # Narration + artifact markdown builders
 # ====================================================================================
-def _kv_cards(pairs) -> str:
-    """Render label/value pairs as a compact markdown table (acts as 'stat cards')."""
-    head = "| " + " | ".join(k for k, _ in pairs) + " |\n"
-    sep = "| " + " | ".join("---" for _ in pairs) + " |\n"
-    row = "| " + " | ".join(str(v) for _, v in pairs) + " |\n"
-    return head + sep + row
+def _stat_cards(pairs) -> str:
+    """Render label/value pairs as a row of styled HTML 'stat cards'."""
+    cards = "".join(
+        f'<div class="stat"><div class="v">{v}</div><div class="k">{k}</div></div>'
+        for k, v in pairs
+    )
+    return f'<div class="stat-cards">{cards}</div>'
 
 
-def eda_stats_md() -> str:
+def _no_data(msg: str) -> str:
+    return f'<p class="muted">{msg}</p>'
+
+
+def eda_stats_html() -> str:
     s = EDA_SUMMARY.get("splits", {})
     raw = EDA_SUMMARY.get("raw", {})
     if not s:
-        return "_EDA summary not found._"
-    return _kv_cards([
+        return _no_data("EDA summary not found.")
+    return _stat_cards([
         ("Countries", s.get("num_classes", "—")),
         ("Forename rows", f"{raw.get('forenames_rows', 0):,}"),
         ("Surname rows", f"{raw.get('surnames_rows', 0):,}"),
@@ -282,11 +288,11 @@ def eda_stats_md() -> str:
     ])
 
 
-def pre_stats_md() -> str:
+def pre_stats_html() -> str:
     s = PRE_STATS
     if not s:
-        return "_Preprocess stats not found._"
-    return _kv_cards([
+        return _no_data("Preprocess stats not found.")
+    return _stat_cards([
         ("Classes", s.get("num_classes", "—")),
         ("Train", f"{s.get('n_train', 0):,}"),
         ("Val", f"{s.get('n_val', 0):,}"),
@@ -359,6 +365,36 @@ footer {display: none !important;}
 #sub {text-align: center; color: var(--body-text-color-subdued);
       font-size: 0.92rem; margin: 2px 0 10px 0;}
 #meta {text-align: center; color: var(--body-text-color-subdued); font-size: 0.85rem;}
+
+/* revealed artifacts: a soft separator above the results */
+.artifacts {border: none !important; box-shadow: none !important; background: transparent !important;
+            border-top: 1px solid var(--border-color-primary) !important;
+            border-radius: 0 !important; margin-top: 14px; padding-top: 14px;}
+
+/* stat cards (EDA / Preprocess key numbers) */
+.stat-cards {display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 14px;}
+.stat-cards .stat {flex: 1 1 110px; text-align: center; padding: 14px 12px;
+    background: var(--block-background-fill);
+    border: 1px solid var(--border-color-primary); border-radius: 12px;}
+.stat-cards .stat .v {font-size: 1.35rem; font-weight: 700; line-height: 1.1;
+    color: var(--body-text-color);}
+.stat-cards .stat .k {margin-top: 5px; font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--body-text-color-subdued);}
+.muted {color: var(--body-text-color-subdued); font-style: italic;}
+
+/* metrics tables rendered from markdown */
+.tbl table {width: 100%; border-collapse: collapse; font-size: 0.9rem;
+    border: 1px solid var(--border-color-primary); border-radius: 12px; overflow: hidden;}
+.tbl thead th {background: var(--table-even-background-fill, var(--neutral-100));
+    text-align: left; padding: 9px 13px; font-weight: 600; border: none;}
+.tbl tbody td {padding: 9px 13px; border: none;
+    border-top: 1px solid var(--border-color-primary);}
+.tbl tbody tr:hover {background: var(--table-row-focus, rgba(128,128,128,0.06));}
+
+/* simulated console: a real terminal look */
+.console {border-radius: 12px !important; overflow: hidden;}
+.console .cm-editor, .console textarea {font-size: 0.82rem !important; line-height: 1.5 !important;}
 """
 
 OVERVIEW = """
@@ -391,7 +427,7 @@ def build_step_tab(label, intro_md, log_lines, build_artifacts):
         gr.Markdown(intro_md)
         run_btn = gr.Button("▶  Run this step", variant="primary")
         console = step_console()
-        with gr.Group(visible=False) as artifacts:
+        with gr.Group(visible=False, elem_classes="artifacts") as artifacts:
             build_artifacts()
         run_btn.click(make_runner(log_lines), outputs=[console, artifacts])
 
@@ -415,7 +451,7 @@ with gr.Blocks(title="Name → Country", theme=THEME, css=CSS) as demo:
         # ---- 1 · EDA ----
         def _eda_artifacts():
             gr.Markdown("#### Dataset at a glance")
-            gr.Markdown(eda_stats_md())
+            gr.HTML(eda_stats_html())
             gr.Gallery(
                 value=[
                     (_asset("eda", "eda_class_balance.png"), "Class balance (per-country counts)"),
@@ -445,7 +481,7 @@ with gr.Blocks(title="Name → Country", theme=THEME, css=CSS) as demo:
         # ---- 2 · Preprocess ----
         def _pre_artifacts():
             gr.Markdown("#### Resulting dataset")
-            gr.Markdown(pre_stats_md())
+            gr.HTML(pre_stats_html())
             gr.Markdown(
                 "- **Synthesis.** The source tables are *aggregated frequency counts* of name "
                 "tokens per country — there are no pre-joined full names. So we sample a forename "
@@ -471,7 +507,7 @@ with gr.Blocks(title="Name → Country", theme=THEME, css=CSS) as demo:
         # ---- 3 · Baselines ----
         def _base_artifacts():
             gr.Markdown("#### Training results (sklearn floor models)")
-            gr.Markdown(baseline_table_md())
+            gr.Markdown(baseline_table_md(), elem_classes="tbl")
             gr.Markdown(
                 "Char n-gram **TF-IDF** → Logistic Regression (saga) / Linear SVM / SGD. "
                 "Logistic Regression wins on macro-F1 while training in **under 3 minutes** on CPU "
@@ -491,7 +527,7 @@ with gr.Blocks(title="Name → Country", theme=THEME, css=CSS) as demo:
         # ---- 4 · Evaluation ----
         def _eval_artifacts():
             gr.Markdown("#### Held-out test metrics")
-            gr.Markdown(eval_table_md())
+            gr.Markdown(eval_table_md(), elem_classes="tbl")
             gr.Markdown(
                 "**Strict** = exact country match. **Set-lenient top-1** credits a prediction that "
                 "hits *any* country the name legitimately belongs to (via the ambiguity map) — it "

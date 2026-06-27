@@ -139,6 +139,9 @@ python -m pipeline.predict05 --name "Tanaka" --model baseline_linsvm.pkl --json
 python -m pipeline.helper.deploy_space   # uploads app/ to the configured HF Space
 ```
 
+- **Source repository:** https://github.com/britoddd/ml-name_country_origin_checker
+- **Live demo (Hugging Face Space):** https://huggingface.co/spaces/britod/name-origins-checker
+
 ## License
 
 See [`archive/LICENSE.txt`](archive/LICENSE.txt) for the dataset license. The Space is published
